@@ -26,14 +26,28 @@ public class SimpleJobConfiguration {
     public Job simpleJob() {
         return new JobBuilder("simpleJob", jobRepository)
                 .start(simpleStep1(null))
+                .next(simpleStep2(null))
                 .build();
     }
+
     @Bean
     @JobScope
     public Step simpleStep1(@Value("#{jobParameters[requestDate]}") String requestDate) {
         return new StepBuilder("simpleStep1", jobRepository)
                 .tasklet((contribution,chunkContext) -> {
-                    System.out.println("Hello, world!");
+                    log.info(">>>>>>> this is step1");
+                    log.info(">>>>>>> requestDate = {}",requestDate);
+                    return RepeatStatus.FINISHED;
+                },transactionManager)
+                .build();
+    }
+
+    @Bean
+    @JobScope
+    public Step simpleStep2(@Value("#{jobParameters[requestDate]}") String requestDate) {
+        return new StepBuilder("simpleStep2", jobRepository)
+                .tasklet((contribution,chunkContext) -> {
+                    log.info(">>>>>>> this is step2");
                     log.info("requestDate = {}",requestDate);
                     return RepeatStatus.FINISHED;
                 },transactionManager)
